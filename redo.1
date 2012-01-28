@@ -1,256 +1,245 @@
-.TH redo 1 "2011-01-18" "Redo 0\.05"
+.TH REDO 1 2011-12-31 "Redo 0.10" "User Commands"
+.ad l
+.nh
 .SH NAME
-.PP
 redo - rebuild target files when source files have changed
 .SH SYNOPSIS
-.PP
-redo [options\.\.\.] [targets\.\.\.]
+redo [options...] [targets...]
 .SH DESCRIPTION
+redo is a simple yet powerful tool for rebuilding target
+files, and any of their dependencies, based on a set of
+rules.  The rules are encoded in simple \fBsh\fR(1) scripts
+called '.do scripts.'
 .PP
-redo is a simple yet powerful tool for rebuilding target files, and
-any of their dependencies, based on a set of rules\. The rules are
-encoded in simple \f[B]sh\f[](1) scripts called \[aq]\.do
-scripts\.\[aq]
+redo supports GNU \fBmake\fR(1)-style parallel builds using the
+\fB-j\fR option; in fact, redo's parallel jobserver is compatible
+with GNU Make, so redo and make can share build tokens with
+each other.  redo can call a sub-make (eg. to build a
+subproject that uses Makefiles) or vice versa (eg. if a
+make-based project needs to build a redo-based subproject).
 .PP
-redo supports GNU \f[B]make\f[](1)-style parallel builds using the
-\f[B]-j\f[] option; in fact, redo\[aq]s parallel jobserver is
-compatible with GNU Make, so redo and make can share build tokens
-with each other\. redo can call a sub-make (eg\. to build a
-subproject that uses Makefiles) or vice versa (eg\. if a make-based
-project needs to build a redo-based subproject)\.
+Unlike make, redo does not have any special syntax of its
+own; each \fItarget\fR is built by running a .do file, which is
+simply a shell script that redo executes for you with a
+particular environment and command-line arguments.
 .PP
-Unlike make, redo does not have any special syntax of its own; each
-\f[I]target\f[] is built by running a \.do file, which is simply a
-shell script that redo executes for you with a particular
-environment and command-line arguments\.
+If no \fItargets\fR are specified, redo pretends you specified
+exactly one target named \fBall\fR.
 .PP
-If no \f[I]targets\f[] are specified, redo pretends you specified
-exactly one target named \f[B]all\f[]\.
+Note that redo \fIalways\fR rebuilds the given targets
+(although it may skip rebuilding the targets' dependencies
+if they are up to date).  If you only want to rebuild
+targets that are not up to date, use \fBredo-ifchange\fR(1)
+instead.
 .PP
-Note that redo \f[I]always\f[] rebuilds the given targets (although
-it may skip rebuilding the targets\[aq] dependencies if they are up
-to date)\. If you only want to rebuild targets that are not up to
-date, use \f[B]redo-ifchange\f[](1) instead\.
-.PP
-A \.do script can call redo recursively to build its dependencies\.
+A .do script can call redo recursively to build its
+dependencies.
 .SH OPTIONS
-.TP
-.B -j, --jobs=\f[I]maxjobs\f[]
-execute at most \f[I]maxjobs\f[] \.do scripts in parallel\. The
-default value is 1\.
-.RS
-.RE
-.TP
-.B -d, --debug
-print dependency checks as they happen\. You can use this to figure
-out why a particular target is/isn\[aq]t being rebuilt when your
-\.do script calls it using \f[B]redo-ifchange\f[]\.
-.RS
-.RE
-.TP
-.B -v, --verbose
-pass the -v option to /bin/sh when executing scripts\. This
-normally causes the shell to echo the \.do script lines to stderr
-as it reads them\. Most shells will print the exact source line
-(eg\. \f[B]echo\ $3\f[]) and not the substituted value of variables
-(eg\. \f[B]echo\ mytarget\.redo\.tmp\f[])\.
-.RS
-.RE
-.TP
-.B -x, --xtrace
-pass the -x option to /bin/sh when executing scripts\. This
-normally causes the shell to echo exactly which commands are being
-executed\. Most shells will print the substituted variables (eg\.
-\f[B]echo\ mytarget\.redo\.tmp\f[]) and not the original source
-line (eg\. \f[B]echo\ $3\f[])\.
-.RS
-.RE
-.TP
-.B -k, --keep-going
-keep building as many targets as possible even if some of them
-return an error\. If one target fails, any target that depends on
-it also cannot be built, of course\.
-.RS
-.RE
-.TP
-.B --shuffle
-randomize the order in which requested targets are built\.
-Normally, if you run \f[B]redo\ a\ b\ c\f[], the targets will be
-built exactly in that order: first \f[B]a\f[], then \f[B]b\f[],
-then \f[B]c\f[]\. But if you use \f[B]-j\f[], they might end up
-being built in parallel, so it isn\[aq]t safe to rely on this
-precise ordering\. Using \f[B]--shuffle\f[], redo will build its
-targets in random order even without \f[B]-j\f[], which makes it
-easier to find accidental dependency problems of this sort\. NOTE:
-if you really just want to guarantee that \f[B]a\f[] is built, then
-\f[B]b\f[], then \f[B]c\f[], you can just run three \f[B]redo\f[]
-commands consecutively\. Because your \.do script is just a script,
-it will not be accidentally parallelized\.
-.RS
-.RE
-.TP
-.B --debug-locks
-print messages about acquiring, releasing, and waiting on locks\.
-Because redo can be highly parallelized, one instance may end up
-waiting for a target to be built by some other instance before it
-can continue\. If you suspect this is causing troubles, use this
-option to see which instance is waiting and when\.
-.RS
-.RE
-.TP
-.B --debug-pids
-add the process id of the particular redo instance to each output
-message\. This makes it easier to figure out which sub-instance of
-redo is doing what\.
-.RS
-.RE
+-j, --jobs=\fImaxjobs\fR
+:   execute at most \fImaxjobs\fR .do scripts in parallel.  The
+default value is 1.
+.PP
+-d, --debug
+:   print dependency checks as they happen.  You can use
+this to figure out why a particular target is/isn't being
+rebuilt when your .do script calls it using
+\fBredo-ifchange\fR.
+.PP
+-v, --verbose
+:   pass the -v option to /bin/sh when executing scripts. 
+This normally causes the shell to echo the .do script lines
+to stderr as it reads them.  Most shells will print the
+exact source line (eg. \fBecho $3\fR) and not the
+substituted value of variables (eg. \fBecho
+mytarget.redo.tmp\fR).
+.PP
+-x, --xtrace
+:   pass the -x option to /bin/sh when executing scripts. 
+This normally causes the shell to echo exactly which
+commands are being executed.  Most shells will print
+the substituted variables (eg. \fBecho
+mytarget.redo.tmp\fR) and not the original source line
+(eg. \fBecho $3\fR).
+.PP
+-k, --keep-going
+:   keep building as many targets as possible even if some
+of them return an error.  If one target fails, any
+target that depends on it also cannot be built, of course.
+.PP
+--shuffle
+:   randomize the order in which requested targets are
+built.  Normally, if you run \fBredo a b c\fR, the targets
+will be built exactly in that order: first \fBa\fR, then
+\fBb\fR, then \fBc\fR.  But if you use \fB-j\fR, they might end up
+being built in parallel, so it isn't safe to rely on
+this precise ordering.  Using \fB--shuffle\fR, redo will
+build its targets in random order even without \fB-j\fR,
+which makes it easier to find accidental dependency
+problems of this sort.  NOTE: if you really just want
+to guarantee that \fBa\fR is built, then \fBb\fR, then \fBc\fR, you
+can just run three \fBredo\fR commands consecutively. 
+Because your .do script is just a script, it will not
+be accidentally parallelized.
+.PP
+--debug-locks
+:   print messages about acquiring, releasing, and waiting
+on locks.  Because redo can be highly parallelized,
+one instance may end up waiting for a target to be
+built by some other instance before it can continue. 
+If you suspect this is causing troubles, use this
+option to see which instance is waiting and when.
+.PP
+--debug-pids
+:   add the process id of the particular redo instance to each
+output message.  This makes it easier to figure out
+which sub-instance of redo is doing what.
+.PP
+--old-args
+:   old versions of redo provided different definitions of
+the $1 and $2 parameters to .do scripts.  The new
+version is compatible with djb's original
+specification.  This option goes back to the old
+definitions so you can use .do scripts you haven't yet
+converted to the new style.
 .SH DISCUSSION
+The core of redo is extremely simple.  When you type \fBredo
+targetname\fR, then it will search for a matching .do file
+based on a simple algorithm.  For example, given a target
+named \fBmytarget.a.b.c.d\fR, redo will look for a .do file in
+the following order:
+.IP " \[bu] " 3
+mytarget.a.b.c.d.do
+.IP " \[bu] " 3
+default.a.b.c.d.do
+.IP " \[bu] " 3
+default.b.c.d.do
+.IP " \[bu] " 3
+default.c.d.do
+.IP " \[bu] " 3
+default.d.do
+.IP " \[bu] " 3
+default.do
 .PP
-The core of redo is extremely simple\. When you type
-\f[B]redo\ targetname\f[], then it will search for a matching \.do
-file based on a simple algorithm\. For example, given a target
-named \f[B]mytarget\.a\.b\.c\.d\f[], redo will look for a \.do file
-in the following order:
-.IP \[bu] 2
-mytarget\.a\.b\.c\.d\.do
-.IP \[bu] 2
-default\.a\.b\.c\.d\.do
-.IP \[bu] 2
-default\.b\.c\.d\.do
-.IP \[bu] 2
-default\.c\.d\.do
-.IP \[bu] 2
-default\.d\.do
-.IP \[bu] 2
-default\.do
+In all cases, the .do file must be in the same directory as
+the target file, or in one of the target's parent
+directories.  For example, if given a target named
+\fB../a/b/xtarget.y\fR, redo will look for a .do file in the
+following order:
+.IP " \[bu] " 3
+$PWD/../a/b/xtarget.y
+.IP " \[bu] " 3
+$PWD/../a/b/default.y.do
+.IP " \[bu] " 3
+$PWD/../a/b/default.do
+.IP " \[bu] " 3
+$PWD/../a/default.y.do
+.IP " \[bu] " 3
+$PWD/../a/default.do
+.IP " \[bu] " 3
+$PWD/../default.y.do
+.IP " \[bu] " 3
+$PWD/../default.do
 .PP
-In all cases, the \.do file must be in the same directory as the
-target file, or in one of the target\[aq]s parent directories\. For
-example, if given a target named \f[B]\.\./a/b/xtarget\.y\f[], redo
-will look for a \.do file in the following order:
-.IP \[bu] 2
-$PWD/\.\./a/b/xtarget\.y
-.IP \[bu] 2
-$PWD/\.\./a/b/default\.y\.do
-.IP \[bu] 2
-$PWD/\.\./a/b/default\.do
-.IP \[bu] 2
-$PWD/\.\./a/default\.y\.do
-.IP \[bu] 2
-$PWD/\.\./a/default\.do
-.IP \[bu] 2
-$PWD/\.\./default\.y\.do
-.IP \[bu] 2
-$PWD/\.\./default\.do
+The first matching .do file is executed as a \fB/bin/sh\fR
+script.  The .do script is always executed with the current
+working directory set to the directory containing the .do
+file.  Because of that rule, the
+following two commands always have exactly identical
+behaviour:
+.RS +4n
+.nf
 .PP
-The first matching \.do file is executed as a \f[B]/bin/sh\f[]
-script\. The \.do script is always executed with the current
-working directory set to the directory containing the \.do file\.
-Because of that rule, the following two commands always have
-exactly identical behaviour:
+redo path/to/target
+
+cd path/to && redo target
+.fi
+.RE
 .PP
-\f[CR]
-      redo\ path/to/target
-      
-      cd\ path/to\ &&\ redo\ target
-\f[]
+(Note: in \fBmake\fR(1), these commands have confusingly
+different semantics.  The first command would look for a
+target named \fBpath/to/target\fR in \fB./Makefile\fR, while the
+second command would look for a target named \fBtarget\fR in
+\fB./path/to/Makefile\fR.  The two Makefiles might give
+completely different results, and it's likely that the
+first command would have incomplete dependency information. 
+redo does not have this problem.)
 .PP
-(Note: in \f[B]make\f[](1), these commands have confusingly
-different semantics\. The first command would look for a target
-named \f[B]path/to/target\f[] in \f[B]\./Makefile\f[], while the
-second command would look for a target named \f[B]target\f[] in
-\f[B]\./path/to/Makefile\f[]\. The two Makefiles might give
-completely different results, and it\[aq]s likely that the first
-command would have incomplete dependency information\. redo does
-not have this problem\.)
+The three arguments passed to the .do script are:
+.IP " \[bu] " 3
+$1: the target name (eg. mytarget.a.b)
+.IP " \[bu] " 3
+$2: the basename of the target, minus its extension (eg. mytarget)
+.IP " \[bu] " 3
+$3: a temporary filename that the .do script should write
+its output to.
 .PP
-The three arguments passed to the \.do script are:
-.IP \[bu] 2
-$1: the basename of the target (eg\. mytarget\.a\.b)
-.IP \[bu] 2
-$2: the extension of the target, if any (eg\. \.c\.d)
-.IP \[bu] 2
-$3: a temporary filename that the \.do script should write its
-output to\.
+Instead of using $3, the .do script may also write the
+produced data to stdout.
 .PP
-Instead of using $3, the \.do script may also write the produced
-data to stdout\.
+If the .do file is in the same directory as the target, $1
+is guaranteed to be a simple filename (with no path
+component).  If the .do file is in a parent directory of
+the target, $1 and $3 will be relative paths (ie. will
+contain slashes).
 .PP
-If the \.do file is in the same directory as the target, $1 and $3
-are guaranteed to be simple filenames (with no path component)\. If
-the \.do file is in a parent directory of the target, $1 and $3
-will be relative paths (ie\. will contain slashes)\.
+redo is designed to update its targets atomically, and only
+if the do script succeeds (ie. returns a zero exit code). 
+Thus, you should never write directly to the target file,
+only to $3 or stdout.
 .PP
-redo is designed to update its targets atomically, and only if the
-do script succeeds (ie\. returns a zero exit code)\. Thus, you
-should never write directly to the target file, only to $3 or
-stdout\.
+Normally, a .do script will call other .do scripts
+recursively, by running either \fBredo\fR (which will always
+build the sub-target) or \fBredo-ifchange\fR (which only
+rebuilds the sub-target if its dependencies have changed).
 .PP
-Normally, a \.do script will call other \.do scripts recursively,
-by running either \f[B]redo\f[] (which will always build the
-sub-target) or \f[B]redo-ifchange\f[] (which only rebuilds the
-sub-target if its dependencies have changed)\.
-.PP
-Running \f[B]redo-ifchange\f[] is also the way your \.do script
+Running \fBredo-ifchange\fR is also the way your .do script
 declares dependencies on other targets; any target that is
-\f[B]redo-ifchange\f[]d during your \.do script\[aq]s execution is
-both executed (if needed) and added as a dependency\.
+\fBredo-ifchange\fRd during your .do script's execution is both
+executed (if needed) and added as a dependency.
 .PP
-You may have heard that \[aq]recursive make is considered
-harmful\[aq] (http://miller\.emu\.id\.au/pmiller/books/rmch/)\.
-Unlike \f[B]make\f[](1), redo does correct locking, state
+You may have heard that 'recursive make is considered
+harmful' (http://miller.emu.id.au/pmiller/books/rmch/). 
+Unlike \fBmake\fR(1), redo does correct locking, state
 management, and global dependency checking, so none of the
-arguments in that essay apply to redo\. In fact, recursive redo is
-really the only kind of redo\.
-.SH RELATED COMMANDS
+arguments in that essay apply to redo.  In fact, recursive
+redo is really the only kind of redo.
+.SH "RELATED COMMANDS"
+When writing a .do script, it will probably need to run
+one or more of the following commands:
 .PP
-When writing a \.do script, it will probably need to run one or
-more of the following commands:
-.TP
-.B \f[B]redo\f[]
-to build a sub-target unconditionally\.
-.RS
-.RE
-.TP
-.B \f[B]redo-ifchange\f[]
-to build a sub-target only if the sub-target\[aq]s dependencies
-have changed\.
-.RS
-.RE
-.TP
-.B \f[B]redo-ifcreate\f[]
-to tell redo that the current target must be rebuilt if a
-particular file gets created\.
-.RS
-.RE
-.TP
-.B \f[B]redo-always\f[]
-to tell redo that the current target must always be rebuilt, even
-if someone calls it using \f[B]redo-ifchange\f[]\. (This might
-happen if the current target has dependencies other than the
-contents of files\.)
-.RS
-.RE
-.TP
-.B \f[B]redo-stamp\f[]
-to tell redo that even though the current target has been rebuilt,
-it may not actually be any different from the previous version, so
-targets that depend on it might not need to be rebuilt\. Often used
-in conjunction with \f[B]redo-always\f[] to reduce the impact of
-always rebuilding a target\.
-.RS
-.RE
+\fBredo\fR
+:   to build a sub-target unconditionally.
+.PP
+\fBredo-ifchange\fR 
+:   to build a sub-target only if the sub-target's
+dependencies have changed.
+.PP
+\fBredo-ifcreate\fR
+:   to tell redo that the current target must be rebuilt if
+a particular file gets created.
+.PP
+\fBredo-always\fR
+:   to tell redo that the current target must always be
+rebuilt, even if someone calls it using \fBredo-ifchange\fR.
+(This might happen if the current target has
+dependencies other than the contents of files.)
+.PP
+\fBredo-stamp\fR
+:   to tell redo that even though the current target has
+been rebuilt, it may not actually be any different from
+the previous version, so targets that depend on it
+might not need to be rebuilt.  Often used in
+conjunction with \fBredo-always\fR to reduce the impact of
+always rebuilding a target.
 .SH CREDITS
-.PP
-The original concept for \f[B]redo\f[] was created by D\. J\.
+The original concept for \fBredo\fR was created by D. J.
 Bernstein and documented on his web site
-(http://cr\.yp\.to/redo\.html)\. This independent implementation
-was created by Avery Pennarun and you can find its source code at
-http://github\.com/apenwarr/redo\.
-.SH SEE ALSO
-.PP
-\f[B]sh\f[](1), \f[B]make\f[](1), \f[B]redo-ifchange\f[](1),
-\f[B]redo-ifcreate\f[](1), \f[B]redo-always\f[](1),
-\f[B]redo-stamp\f[](1)
+(http://cr.yp.to/redo.html).  This independent implementation
+was created by Avery Pennarun and you can find its source
+code at http://github.com/apenwarr/redo.
+.SH "SEE ALSO"
+\fBsh\fR(1), \fBmake\fR(1),
+\fBredo-ifchange\fR(1), \fBredo-ifcreate\fR(1), \fBredo-always\fR(1),
+\fBredo-stamp\fR(1)
 .SH AUTHOR
-Avery Pennarun <apenwarr@gmail.com>
+Avery Pennarun \\<apenwarr@gmail.com>

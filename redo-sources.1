@@ -1,43 +1,39 @@
-.TH redo-sources 1 "2011-01-18" "Redo 0\.05"
+.TH REDO-SOURCES 1 2011-12-31 "Redo 0.10" "User Commands"
+.ad l
+.nh
 .SH NAME
-.PP
 redo-sources - print the list of all known redo sources
 .SH SYNOPSIS
-.PP
 redo-sources
 .SH DESCRIPTION
+redo-sources prints a list of all redo \fIsource\fR files that
+still exist.
 .PP
-redo-sources prints a list of all redo \f[I]source\f[] files that
-still exist\.
+A source file is any file that has been listed as a
+dependency (using \fBredo-ifchange\fR(1) or \fBredo-ifcreate\fR(1))
+but is not itself a target.  A target is a file that
+\fBredo\fR(1) can build using a .do script.
 .PP
-A source file is any file that has been listed as a dependency
-(using \f[B]redo-ifchange\f[](1) or \f[B]redo-ifcreate\f[](1)) but
-is not itself a target\. A target is a file that \f[B]redo\f[](1)
-can build using a \.do script\.
+Each filename is on a separate line.  The filenames are not
+guaranteed to be in any particular order.
 .PP
-Each filename is on a separate line\. The filenames are not
-guaranteed to be in any particular order\.
-.PP
-All filenames are printed relative the current directory\. The list
-is not filtered in any way; it contains \f[I]all\f[] the source
-filenames from the entire project\. Remember that the redo database
-may span more than just your project, so you might need to filter
-the list before using it\.
+All filenames are printed relative the current directory.
+The list is not filtered in any way; it contains \fIall\fR the
+source filenames from the entire project.  Remember that
+the redo database may span more than just your project, so
+you might need to filter the list before using it.
 .PP
 If you want a list of targets instead of sources, use
-\f[B]redo-targets\f[](1) or \f[B]redo-ood\f[](1)\.
+\fBredo-targets\fR(1) or \fBredo-ood\fR(1).
 .SH REDO
-.PP
-Part of the \f[B]redo\f[](1) suite\.
+Part of the \fBredo\fR(1) suite.
 .SH CREDITS
-.PP
-The original concept for \f[B]redo\f[] was created by D\. J\.
+The original concept for \fBredo\fR was created by D. J.
 Bernstein and documented on his web site
-(http://cr\.yp\.to/redo\.html)\. This independent implementation
-was created by Avery Pennarun and you can find its source code at
-http://github\.com/apenwarr/redo\.
-.SH SEE ALSO
-.PP
-\f[B]redo\f[](1), \f[B]redo-targets\f[](1), \f[B]redo-ood\f[](1)
+(http://cr.yp.to/redo.html).  This independent implementation
+was created by Avery Pennarun and you can find its source
+code at http://github.com/apenwarr/redo.
+.SH "SEE ALSO"
+\fBredo\fR(1), \fBredo-targets\fR(1), \fBredo-ood\fR(1)
 .SH AUTHOR
-Avery Pennarun <apenwarr@gmail.com>
+Avery Pennarun \\<apenwarr@gmail.com>

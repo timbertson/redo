@@ -1,116 +1,117 @@
-.TH redo-stamp 1 "2011-01-18" "Redo 0\.05"
+.TH REDO-STAMP 1 2011-12-31 "Redo 0.10" "User Commands"
+.ad l
+.nh
 .SH NAME
-.PP
 redo-stamp - detect if the current target has meaningfully changed
 .SH SYNOPSIS
-.PP
-redo-stamp <$3
+redo-stamp <\\$3
 .SH DESCRIPTION
+Normally, when \fBredo\fR(1) builds a target T, all the other
+targets that depend on T are marked as out of date.  Even
+if the rebuilt T is identical to the old one, all its
+dependents need to be rebuilt.
 .PP
-Normally, when \f[B]redo\f[](1) builds a target T, all the other
-targets that depend on T are marked as out of date\. Even if the
-rebuilt T is identical to the old one, all its dependents need to
-be rebuilt\.
+By calling redo-stamp from your .do script, you can tell
+\fBredo\fR that even though the current target is building, its
+output may turn out to be unchanged.  If it hasn't, \fBredo\fR
+may then be able to avoid building other targets that
+depend on this target.
 .PP
-By calling redo-stamp from your \.do script, you can tell
-\f[B]redo\f[] that even though the current target is building, its
-output may turn out to be unchanged\. If it hasn\[aq]t,
-\f[B]redo\f[] may then be able to avoid building other targets that
-depend on this target\.
+redo-stamp marks the current target as changed or unchanged
+by comparing its stdin to the input that was provided last
+time redo-stamp was called for this target.
 .PP
-redo-stamp marks the current target as changed or unchanged by
-comparing its stdin to the input that was provided last time
-redo-stamp was called for this target\.
-.PP
-The stamp data can be anything you want\. Some possibilities are:
-.IP \[bu] 2
+The stamp data can be anything you want. Some possibilities
+are:
+.IP " \[bu] " 3
+.IP "   " 3
 the actual target file contents:
-.RS 2
-.PP
-\f[CR]
-      redo-stamp\ <\\$3
-\f[]
+.RS +4n
+.nf
+.IP "   " 3
+redo-stamp <\\$3
+.fi
 .RE
-.IP \[bu] 2
+.IP " \[bu] " 3
+.IP "   " 3
 a list of filenames:
-.RS 2
-.PP
-\f[CR]
-      find\ -name\ \[aq]*\.[ch]\[aq]\ |\ sort\ |\ redo-stamp
-\f[]
+.RS +4n
+.nf
+.IP "   " 3
+find -name '*.[ch]' | sort | redo-stamp
+.fi
 .RE
-.IP \[bu] 2
+.IP " \[bu] " 3
+.IP "   " 3
 the contents of a web page:
-.RS 2
-.PP
-\f[CR]
-      curl\ http://example\.org\ |\ redo-stamp
-\f[]
+.RS +4n
+.nf
+.IP "   " 3
+curl http://example.org | redo-stamp
+.fi
 .RE
 .PP
-To ensure that your target gets checked every time, you might want
-to use \f[B]redo-always\f[](1)\.
+To ensure that your target gets checked every time, you
+might want to use \fBredo-always\fR(1).
 .SH DISCUSSION
-.PP
-While using redo-stamp is simple, the way it works is harder to
-explain\. Deciding if a target is up to date or not is the job of
-\f[B]redo-ifchange\f[](1)\. Normally, a target is considered out of
-date when any of its dependencies (direct or indirect) have
-changed\. When that happens, \f[B]redo-ifchange\f[] runs the \.do
-script for the target, which regenerates the entire dependency
-list, including rebuilding any dependencies as necessary\.
+While using redo-stamp is simple, the way it
+works is harder to explain.  Deciding if a target is
+up to date or not is the job of \fBredo-ifchange\fR(1). 
+Normally, a target is considered out of date when any of its
+dependencies (direct or indirect) have changed.  When that
+happens, \fBredo-ifchange\fR runs the .do script for the
+target, which regenerates the entire dependency list,
+including rebuilding any dependencies as necessary.
 .PP
 Imagine that we have the following dependency chain:
+.RS +4n
+.nf
 .PP
-\f[CR]
-      T\ ->\ X\ ->\ Y\ ->\ Z
-\f[]
+T -> X -> Y -> Z
+.fi
+.RE
 .PP
-T depends on X, which depends on Y, which depends on Z\. Now
-imagine someone has changed Z\.
+T depends on X, which depends on Y, which depends
+on Z.  Now imagine someone has changed Z.
 .PP
-If someone runs \f[B]redo-ifchange\ T\f[], then redo-ifchange
-checks if X is up to date; to do that, it checks if Y is up to
-date; and to do that, it checks whether Z is up to date - which it
-isn\[aq]t\. Thus, Y is not up to date, which means X isn\[aq]t,
-which means T isn\[aq]t either, and so we need to run T\.do\.
-\f[B]redo-ifchange\f[] won\[aq]t directly \f[B]redo\ X\f[] just
-because X is dirty; it redoes T, and T\.do might eventually call
-\f[B]redo-ifchange\ X\f[] if it needs to\.
+If someone runs \fBredo-ifchange T\fR, then redo-ifchange
+checks if X is up to date; to do that, it checks if Y
+is up to date; and to do that, it checks whether Z is up to
+date - which it isn't.  Thus, Y is not up to date, which
+means X isn't, which means T isn't either, and so we need
+to run T.do.  \fBredo-ifchange\fR won't directly \fBredo X\fR just
+because X is dirty; it redoes T, and T.do might eventually
+call \fBredo-ifchange X\fR if it needs to.
 .PP
-When using redo-stamp, the behaviour is different\. Let\[aq]s say Y
-has used redo-stamp\. In the above sequence, Y is outdated because
-Z has changed\. However, we don\[aq]t know yet if Y\[aq]s stamp has
-changed, so we don\[aq]t yet know if we need to redo X, and thus we
-don\[aq]t know if we need to redo T\. We can\[aq]t just run
-\f[B]redo\ T\f[], because that could waste a lot of time if it
-turns out T didn\[aq]t need to be rebuilt after all\.
+When using redo-stamp, the behaviour is different.  Let's
+say Y has used redo-stamp.  In the above sequence, Y is
+outdated because Z has changed.  However, we don't know yet
+if Y's stamp has changed, so we don't yet know if we need
+to redo X, and thus we don't know if we need to redo T.  We
+can't just run \fBredo T\fR, because that could waste a lot of
+time if it turns out T didn't need to be rebuilt after all.
 .PP
-What we do instead is note whether the \f[I]only\f[] dependencies
-of T that are out of date are \[aq]stamped\[aq] targets\. If
-\f[I]any\f[] dependencies of T are normal, out-of-date redo
-targets, then T needs to be rebuilt anyway; we don\[aq]t have to do
-anything special\.
+What we do instead is note whether the \fIonly\fR dependencies
+of T that are out of date are 'stamped' targets.  If \fIany\fR
+dependencies of T are normal, out-of-date redo targets,
+then T needs to be rebuilt anyway; we don't have to do
+anything special.
 .PP
 If the only dependency of T that has changed is Y (a
-\[aq]stamped\[aq] target), then we need to \f[B]redo\ Y\f[]
-automatically in order to determine if T needs to be rebuilt\. This
-is the only time that \f[B]redo\f[] ever rebuilds a target that
-hasn\[aq]t been explicitly asked for as part of a running \.do
-script\.
+'stamped' target), then we need to \fBredo Y\fR automatically
+in order to determine if T needs to be rebuilt.  This is
+the only time that \fBredo\fR ever rebuilds a target that
+hasn't been explicitly asked for as part of a running .do
+script.
 .SH REDO
-.PP
-Part of the \f[B]redo\f[](1) suite\.
+Part of the \fBredo\fR(1) suite.
 .SH CREDITS
-.PP
-The original concept for \f[B]redo\f[] was created by D\. J\.
+The original concept for \fBredo\fR was created by D. J.
 Bernstein and documented on his web site
-(http://cr\.yp\.to/redo\.html)\. This independent implementation
-was created by Avery Pennarun and you can find its source code at
-http://github\.com/apenwarr/redo\.
-.SH SEE ALSO
-.PP
-\f[B]redo\f[](1), \f[B]redo-ifcreate\f[](1),
-\f[B]redo-ifchange\f[](1), \f[B]redo-always\f[](1)
+(http://cr.yp.to/redo.html).  This independent implementation
+was created by Avery Pennarun and you can find its source
+code at http://github.com/apenwarr/redo.
+.SH "SEE ALSO"
+\fBredo\fR(1), \fBredo-ifcreate\fR(1), \fBredo-ifchange\fR(1), \fBredo-always\fR(1)
 .SH AUTHOR
-Avery Pennarun <apenwarr@gmail.com>
+Avery Pennarun \\<apenwarr@gmail.com>

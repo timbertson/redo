@@ -1,40 +1,34 @@
-.TH redo-ifcreate 1 "2011-01-18" "Redo 0\.05"
+.TH REDO-IFCREATE 1 2011-12-31 "Redo 0.10" "User Commands"
+.ad l
+.nh
 .SH NAME
-.PP
-redo-ifcreate - rebuild the current target if source files are
-created
+redo-ifcreate - rebuild the current target if source files are created
 .SH SYNOPSIS
-.PP
-redo-ifcreate [sources\.\.\.]
+redo-ifcreate [sources...]
 .SH DESCRIPTION
+Normally redo-ifcreate is run from a .do file that has been
+executed by \fBredo\fR(1).  See \fBredo\fR(1) for more details.
 .PP
-Normally redo-ifcreate is run from a \.do file that has been
-executed by \f[B]redo\f[](1)\. See \f[B]redo\f[](1) for more
-details\.
+redo-ifcreate takes a list of nonexistent files (\fIsources\fR)
+and adds them as dependencies to the current target (the
+one calling redo-ifcreate).  If any of those files are
+created in the future, the target will be marked as needing
+to be rebuilt.
 .PP
-redo-ifcreate takes a list of nonexistent files (\f[I]sources\f[])
-and adds them as dependencies to the current target (the one
-calling redo-ifcreate)\. If any of those files are created in the
-future, the target will be marked as needing to be rebuilt\.
+If one of the given files exists at the time redo-ifcreate
+is called, it will return a nonzero exit code.
 .PP
-If one of the given files exists at the time redo-ifcreate is
-called, it will return a nonzero exit code\.
-.PP
-If you want to declare dependencies on files that already exist,
-use \f[B]redo-ifchange\f[](1) instead\.
+If you want to declare dependencies on files that already
+exist, use \fBredo-ifchange\fR(1) instead.
 .SH REDO
-.PP
-Part of the \f[B]redo\f[](1) suite\.
+Part of the \fBredo\fR(1) suite.
 .SH CREDITS
-.PP
-The original concept for \f[B]redo\f[] was created by D\. J\.
+The original concept for \fBredo\fR was created by D. J.
 Bernstein and documented on his web site
-(http://cr\.yp\.to/redo\.html)\. This independent implementation
-was created by Avery Pennarun and you can find its source code at
-http://github\.com/apenwarr/redo\.
-.SH SEE ALSO
-.PP
-\f[B]redo\f[](1), \f[B]redo-ifchange\f[](1),
-\f[B]redo-always\f[](1), \f[B]redo-stamp\f[](1)
+(http://cr.yp.to/redo.html).  This independent implementation
+was created by Avery Pennarun and you can find its source
+code at http://github.com/apenwarr/redo.
+.SH "SEE ALSO"
+\fBredo\fR(1), \fBredo-ifchange\fR(1), \fBredo-always\fR(1), \fBredo-stamp\fR(1)
 .SH AUTHOR
-Avery Pennarun <apenwarr@gmail.com>
+Avery Pennarun \\<apenwarr@gmail.com>

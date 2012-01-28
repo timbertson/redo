@@ -1,49 +1,46 @@
-.TH redo-ood 1 "2011-01-18" "Redo 0\.05"
+.TH REDO-OOD 1 2011-12-31 "Redo 0.10" "User Commands"
+.ad l
+.nh
 .SH NAME
-.PP
 redo-ood - print the list of out-of-date redo targets
 .SH SYNOPSIS
-.PP
 redo-ood
 .SH DESCRIPTION
+redo-ood prints a list of all redo \fItarget\fR files that
+exist, but are out of date.
 .PP
-redo-ood prints a list of all redo \f[I]target\f[] files that
-exist, but are out of date\.
+Files that no longer exist might not be targets anymore;
+you'll have to redo them for them to end up back in this
+list.  (For example, if you built a file and then removed
+the file and its .do file, you wouldn't want it to show up
+in this list.)
 .PP
-Files that no longer exist might not be targets anymore; you\[aq]ll
-have to redo them for them to end up back in this list\. (For
-example, if you built a file and then removed the file and its \.do
-file, you wouldn\[aq]t want it to show up in this list\.)
+If a .do script does not produce an output file (eg.
+all.do, clean.do), it also does not show up in this list.
 .PP
-If a \.do script does not produce an output file (eg\. all\.do,
-clean\.do), it also does not show up in this list\.
+Each filename is on a separate line.  The filenames are not
+guaranteed to be in any particular order.
 .PP
-Each filename is on a separate line\. The filenames are not
-guaranteed to be in any particular order\.
+All filenames are printed relative the current directory.
+The list is not filtered in any way; it contains \fIall\fR the
+target filenames from the entire project.  Remember that
+the redo database may span more than just your project, so
+you might need to filter the list before using it.  (A
+useful heuristic might be to remove any line starting with
+'../' since it often refers to a target you don't care
+about.)
 .PP
-All filenames are printed relative the current directory\. The list
-is not filtered in any way; it contains \f[I]all\f[] the target
-filenames from the entire project\. Remember that the redo database
-may span more than just your project, so you might need to filter
-the list before using it\. (A useful heuristic might be to remove
-any line starting with \[aq]\.\./\[aq] since it often refers to a
-target you don\[aq]t care about\.)
-.PP
-If you want a list of all targets, not just out-of-date ones, use
-\f[B]redo-targets\f[](1)\.
+If you want a list of all targets, not just out-of-date
+ones, use \fBredo-targets\fR(1).
 .SH REDO
-.PP
-Part of the \f[B]redo\f[](1) suite\.
+Part of the \fBredo\fR(1) suite.
 .SH CREDITS
-.PP
-The original concept for \f[B]redo\f[] was created by D\. J\.
+The original concept for \fBredo\fR was created by D. J.
 Bernstein and documented on his web site
-(http://cr\.yp\.to/redo\.html)\. This independent implementation
-was created by Avery Pennarun and you can find its source code at
-http://github\.com/apenwarr/redo\.
-.SH SEE ALSO
-.PP
-\f[B]redo\f[](1), \f[B]redo-targets\f[](1),
-\f[B]redo-sources\f[](1)
+(http://cr.yp.to/redo.html).  This independent implementation
+was created by Avery Pennarun and you can find its source
+code at http://github.com/apenwarr/redo.
+.SH "SEE ALSO"
+\fBredo\fR(1), \fBredo-targets\fR(1), \fBredo-sources\fR(1)
 .SH AUTHOR
-Avery Pennarun <apenwarr@gmail.com>
+Avery Pennarun \\<apenwarr@gmail.com>
