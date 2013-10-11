@@ -170,12 +170,6 @@ class File(object):
 
     def _get_redodir(self, name):
         d = os.path.dirname(name)
-        #r = [".redo"]
-        #while not os.path.isdir(d):
-        #    d, sep, base = d.rpartition.split('/')
-        #    if not sep: break
-        #    r.append("%s.redo" % base)
-        #return os.path.join(d, *r)
         return os.path.join(d, ".redo")
 
     def tmpfilename(self, filetype):
