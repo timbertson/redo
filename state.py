@@ -139,15 +139,34 @@ class File(object):
         self.dir = os.path.split(self.name)[0]
         if name != ALWAYS:
             self.redo_dir = self._get_redodir(name)
-            try: os.makedirs(self.redo_dir)
-            except: pass
-            self.read_only = not os.path.isdir(self.redo_dir)
-            if not self.read_only:
-                self.dolock = Lock(self.tmpfilename("do.lock"))
+        self.dolock = None
         self.refresh()
 
     def __repr__(self):
         return 'state.File(%s)' % self.name
+
+    def trylock(self):
+        self.ensure_dolock().trylock()
+
+    def waitlock(self):
+        self.ensure_dolock().waitlock()
+
+    def unlock(self):
+        self.dolock.unlock()
+
+    def ensure_dolock(self):
+        if self.dolock is None:
+            if self.name != ALWAYS:
+                debug2("makedirs: %s\n" % self.redo_dir)
+                try: os.makedirs(self.redo_dir)
+                except: pass
+                read_only = not os.path.isdir(self.redo_dir)
+                if not read_only:
+                    self.dolock = Lock(self.tmpfilename("do.lock"))
+                    debug2("lock: %s\n" % (self.dolock.name))
+                    return self.dolock
+            raise AttributeError('dolock')
+        return self.dolock
 
     def _get_redodir(self, name):
         d = os.path.dirname(name)

@@ -277,7 +277,7 @@ class BuildJob:
 
         finally:
             self.tmp_sout_f.close()
-            self.target.dolock.unlock()
+            self.target.unlock()
 
     def _move_extra_results(self, src, dest, rv):
         assert src
@@ -296,7 +296,7 @@ class BuildJob:
                 os.rename(src, dest)
                 sf.copy_deps_from(self.target)
             else:
-                sf.dolock.trylock()
+                sf.trylock()
                 if sf.dolock.owned == state.LOCK_EX:
                     try:
                         sf.build_starting()
@@ -305,7 +305,7 @@ class BuildJob:
                         sf.copy_deps_from(self.target)
                         sf.build_done(rv)
                     finally:
-                        sf.dolock.unlock()
+                        sf.unlock()
                 else:
                     warn("%s: discarding (parallel build)\n", dest)
                     unlink(src)
@@ -334,7 +334,7 @@ def build(f, any_errors, should_build, add_dep_to=None, delegate=None, re_do=Tru
         #assert(dirty in (deps.DIRTY, deps.CLEAN))
     if dirty:
         job = BuildJob(f, any_errors, add_dep_to, delegate, re_do)
-        f.dolock.waitlock()
+        f.waitlock()
         job.schedule_job()
         # jwack.wait_all() # temp: wait for the job to complete
     elif add_dep_to:
