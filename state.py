@@ -285,7 +285,7 @@ class File(object):
         """Call this when you're done building this target."""
         depsname = self.tmpfilename('deps2')
         debug3('build ending: %r (exit=%r)\n', depsname, exitcode)
-        if exitcode == 0:
+        if exitcode == 0 or os.path.exists(self.name):
             self._add(self.read_stamp(runid=vars.RUNID))
             self._add(exitcode)
             os.utime(depsname, (vars.RUNID, vars.RUNID))
