@@ -284,11 +284,16 @@ class File(object):
     def build_done(self, exitcode):
         """Call this when you're done building this target."""
         depsname = self.tmpfilename('deps2')
-        debug3('build ending: %r\n', depsname)
-        self._add(self.read_stamp(runid=vars.RUNID))
-        self._add(exitcode)
-        os.utime(depsname, (vars.RUNID, vars.RUNID))
-        os.rename(depsname, self.tmpfilename('deps'))
+        debug3('build ending: %r (exit=%r)\n', depsname, exitcode)
+        if exitcode == 0:
+            self._add(self.read_stamp(runid=vars.RUNID))
+            self._add(exitcode)
+            os.utime(depsname, (vars.RUNID, vars.RUNID))
+            os.rename(depsname, self.tmpfilename('deps'))
+        else:
+            # dependencies accumulated for
+            # a target that failed to build are useless
+            os.remove(depsname)
 
     def add_dep(self, file):
         """Mark the given File() object as a dependency of this target.
