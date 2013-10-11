@@ -2,44 +2,11 @@ import sys, os, errno, stat
 import vars, state, jwack, deps
 from helpers import unlink, close_on_exec, join
 from log import log, log_, debug, debug2, debug3, err, warn
-
-
-def _default_do_files(filename):
-    l = filename.split('.')
-    for i in range(1,len(l)+1):
-        basename = join('.', l[:i])
-        ext = join('.', l[i:])
-        if ext: ext = '.' + ext
-        yield ("default%s.do" % ext), basename, ext
-    
-
-def _possible_do_files(t):
-    dirname,filename = os.path.split(t)
-    yield (dirname, "%s.do" % filename, '', filename, '')
-    yield (dirname, "%s.do" % filename, '', filename, '')
-
-    # It's important to try every possibility in a directory before resorting
-    # to a parent directory.  Think about nested projects: I don't want
-    # ../../default.o.do to take precedence over ../default.do, because
-    # the former one might just be an artifact of someone embedding my project
-    # into theirs as a subdir.  When they do, my rules should still be used
-    # for building my project in *all* cases.
-    dirbits = os.path.abspath(dirname).split('/')
-    for i in range(len(dirbits), -1, -1):
-        basedir = os.path.join(dirname,
-                               join('/', ['..'] * (len(dirbits) - i)))
-        subdir = join('/', dirbits[i:])
-        for dofile,basename,ext in _default_do_files(filename):
-            yield (basedir, dofile,
-                   subdir, os.path.join(subdir, basename), ext)
-
-def _possible_do_files_in_do_dir(t):
-    for dodir,dofile,basedir,basename,ext in _possible_do_files(t):
-        yield (dodir,dofile,basedir,basename,ext)
-        yield (dodir+"/do", dofile, "../"+basedir, basename, ext)
+import dofiles
 
 def _find_do_file(f):
-    for dodir,dofile,basedir,basename,ext in _possible_do_files_in_do_dir(f.name):
+    for dodir,dofile,ext in dofiles._possible_do_files(f.name):
+        debug2('%s: %s | %s ?\n', f.name, dodir, dofile)
         if dodir and not os.path.isdir(dodir):
             # we don't want to normpath() unless we have no other choice.
             # otherwise we could have odd behaviour with symlinks (ie.
@@ -49,14 +16,15 @@ def _find_do_file(f):
             # create the sub-path.
             dodir = os.path.normpath(dodir)
         dopath = os.path.join(dodir, dofile)
-        debug2('%s: %s:%s ?\n', f.name, dodir, dofile)
         dof = state.File(dopath)
         if os.path.exists(dopath):
             f.add_dep(dof)
-            return dodir,dofile,basedir,basename,ext
+            basename = os.path.relpath(f.name, dodir)
+            if ext: basename = basename = basename[:-len(ext)]
+            return dodir,dofile,basename,ext
         else:
             f.add_dep(dof)
-    return None,None,None,None,None
+    return None,None,None,None
 
 
 def _try_stat(filename):
@@ -133,7 +101,7 @@ class BuildJob:
                 debug2('-- static (%r)\n', self.target.name)
                 return 0
 
-        (self.dodir, self.dofile, self.dobasedir, self.dobasename, self.doext) = _find_do_file(self.target)
+        (self.dodir, self.dofile, self.dobasename, self.doext) = _find_do_file(self.target)
         if not self.dofile:
             if state.is_missing(newstamp):
                 err('no rule to make %r\n', self.target.name)
@@ -167,8 +135,8 @@ class BuildJob:
     def build(self):
         debug3('running build job for %r\n', self.target.name)
 
-        (dodir, dofile, basedir, basename, ext) = (
-            self.dodir, self.dofile, self.dobasedir, self.dobasename, self.doext)
+        (dodir, dofile, basename, ext) = (
+            self.dodir, self.dofile, self.dobasename, self.doext)
 
         # this will run in the dofile's directory, so use only basenames here
         if vars.OLD_ARGS:

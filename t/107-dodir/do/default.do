@@ -1,2 +1,1 @@
-echo $$ >>log
-echo $$ >$3
+echo default >$3
